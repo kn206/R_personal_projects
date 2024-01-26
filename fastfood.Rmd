@@ -1,0 +1,266 @@
+---
+title: "fastfood"
+author: "name"
+date: "2024-01-26"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#== Introduction
+
+```{r}
+### Load Libraries
+library(tidyverse) 
+library(openintro)
+library(dplyr)
+```
+#Load dataset
+```{r}
+fastfood
+```
+
+#run the following:
+```{r}
+
+Q0.1 <- fastfood %>%
+  select(restaurant, calories, item) %>%
+  group_by(restaurant) %>% 
+  slice_max(calories, n=3) %>%
+  as.data.frame()
+Q0.1
+
+```
+
+#Introduction  run the following:
+
+```{r}
+Q0.2 <- fastfood %>%   
+  select(restaurant, calories) %>%   
+  filter(calories>1000) %>%    
+  group_by(restaurant) %>%    
+  summarise(item_count = n()) %>%    
+  as.data.frame() 
+Q0.2
+
+```
+
+Question1.
+### Q1 Looking only at Burger King and Chick-Fil-A, which item has the highest calories?
+
+- Your solution should be a dataframe assigned to Q1.
+
+
+```{r}
+# Q1
+Q1 <- fastfood %>%
+  filter(restaurant %in% c("Burger King", "Chick-Fil-A")) %>%
+  group_by(restaurant) %>%
+  slice_max(calories) %>%
+  as.data.frame()
+Q1
+
+```
+
+Question2.
+### Q2 What is the average sugar amount for all items from Subway?
+
+-   Your solution should be a dataframe assigned to Q2.
+
+```{r}
+# Q2
+Q2 <- fastfood %>%
+  filter(restaurant == "Subway") %>%
+  summarise(average_sugar = mean(sugar, na.rm = TRUE)) %>%
+  as.data.frame()
+Q2
+
+```
+
+Question3.
+### Q3 What is the average value of calories for all items from Taco Bell?
+
+-   Your solution should be a dataframe assigned to Q3.
+
+```{r}
+# Q3
+Q3 <- fastfood %>%
+  filter(restaurant == "Taco Bell") %>%
+  summarise(average_calories = mean(calories, na.rm = TRUE)) %>%
+  as.data.frame()
+Q3
+
+```
+Question4.
+### Q4 Create a variable equal to total_fat x sugar called fatXsugar. Produce a dataframe that has the restaurant, item, and fatXsugar for the top 3 items, from highest to lowest.
+
+-   Your solution should be a dataframe assigned to Q4.
+
+
+```{r}
+# Q4
+Q4 <- fastfood %>%
+  mutate(fatXsugar = total_fat * sugar) %>%
+  arrange(desc(fatXsugar)) %>%
+  group_by(restaurant) %>%
+  slice_head(n = 3) %>%
+  select(restaurant, item, fatXsugar) %>%
+  as.data.frame()
+Q4
+
+```
+
+### Q5 How many restaurants have an average saturated fat over 10?
+
+-   Your solution should be a dataframe assigned to Q5.
+
+```{r}
+# Q5
+Q5 <- fastfood %>%
+  group_by(restaurant) %>%
+  summarise(average_saturated_fat = mean(sat_fat, na.rm = TRUE)) %>%
+  filter(average_saturated_fat > 10) %>%
+  summarise(restaurant_count = n()) %>%
+  as.data.frame()
+Q5
+
+```
+
+-----NEXT SECTION:
+### Allowable packages
+
+The only allowable packages are `tidyverse`, `openintro` (you will need to install it if you haven't already), and `lm.beta`
+---
+### Data Set
+
+The data set for this assignment is called **`fastfood`**. See the [fastfood documentation](https://www.openintro.org/data/index.php?data=fastfood) for more info
+
+### Continued -
+
+### Load Libraries
+```{r}
+library(tidyverse) 
+library(openintro) 
+library(lm.beta)
+```
+
+
+Question6.
+### Q6  , Create a correlation matrix for the relations between calories, total_fat, sugar, and calcium for all items at Sonic, Subway, and Taco Bell, omitting missing values with `na.omit()`.
+
+
+```{r}
+# Q6
+Q1 <- fastfood %>%
+  filter(restaurant %in% c("Sonic", "Subway", "Taco Bell")) %>%
+  select(calories, total_fat, sugar, calcium) %>%
+  na.omit() %>%
+  cor() %>%
+  as.data.frame()
+Q1
+
+```
+
+
+Question7.
+### Q7 Create a regression predicting whether or not a restaurant is McDonalds or Subway based on calories, sodium, and protein. (McDonalds should be 1, Subway 0) Hint: make sure you know how McDonalds is spelled in the dataset.
+
+-   Assign the model coefficients to Q7. 
+
+
+
+```{r}
+# Q7
+model <- lm(restaurant %in% c("McDonald's", "Subway") ~ calories + sodium + protein, data = fastfood)
+Q7 <- model
+Q7 
+
+```
+
+
+Question8.
+### Q8 Run the same regression as in Q7 but remove sodium as a predictor. Which is the better model?
+
+-   Use the classical AIC (k=2).
+-   Assign the AIC of the better model to Q3.
+
+
+```{r}
+# Fit the model with sodium as a predictor (Q7)
+model_with_sodium <- lm(restaurant %in% c("McDonald's", "Subway") ~ calories + sodium + protein, data = fastfood)
+
+# Fit the model without sodium as a predictor
+model_without_sodium <- lm(restaurant %in% c("McDonald's", "Subway") ~ calories + protein, data = fastfood)
+
+# Calculate AIC for both models
+AIC_with_sodium <- AIC(model_with_sodium, k = 2)
+AIC_without_sodium <- AIC(model_without_sodium, k = 2)
+
+# Determine the better model based on AIC
+better_model <- ifelse(AIC_with_sodium < AIC_without_sodium, "with_sodium", "without_sodium")
+
+# Assign the AIC of the better model to Q3
+Q3 <- ifelse(better_model == "with_sodium", AIC_with_sodium, AIC_without_sodium)
+Q3 <- as.data.frame(Q3)
+Q3
+
+```
+
+### Q9 Run a regression predicting calories from saturated fat, fiber, and sugar. Based on *standardized* regression coefficients, identify the strongest predictor.
+
+-   Assign the ***un**standardized* regression coefficient of the strongest predictor to Q9.
+-   (You can access the coefficients by indexing the model object.)
+
+```{r}
+# Q9
+model_q9 <- lm(calories ~ sat_fat + fiber + sugar, data = fastfood)
+
+# Identify the strongest predictor based on *standardized* coefficients
+strongest_predictor <- names(which.max(abs(coef(model_q9))))
+
+# Access the *unstandardized* regression coefficient of the strongest predictor
+Q9 <- coef(model_q9)[strongest_predictor]
+Q9 <- as.data.frame(Q9)
+Q9
+
+```
+
+### Q10 For this question, use data from only restaurants with between 50 and 60 items in the data set. Predict total fat from cholesterol, total carbs, vitamin a, and restaurant. Remove any nonsignificant predictors and run again.
+
+-   Assign the strongest standardized regression coefficient to Q10. Your output should look something like this:
+
+
+```{r}
+filtered_data <- fastfood %>%
+  group_by(restaurant) %>%
+  filter(n() >= 50 & n() <= 60) %>%
+  ungroup()
+
+model_q10 <- lm(total_fat ~ cholesterol + total_carb + vit_a + restaurant, data = filtered_data)
+
+# Identify and print the strongest standardized regression coefficient
+strongest_predictor_q10 <- names(which.max(abs(coef(model_q10, standardize = TRUE))))
+Q10 <- coef(model_q10, standardize = TRUE)[strongest_predictor_q10]
+Q10 <- as.data.frame(Q10)
+Q10
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
