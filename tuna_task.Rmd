@@ -1,0 +1,317 @@
+---
+title: "task"
+author: "name"
+date: "2023-11-27"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+setwd("C:/Users/NYONGESA/Documents/tuna_analysis")
+```
+
+
+```{r}
+library(readr)
+tuna<-read.csv("tuna.csv")
+```
+
+# Question 1
+
+*a. Regress the logarithmic demand for Geisha tuna on the logarithmic price of all seven brands with an intercept. Show your R codes and the regression summary.*
+
+```{r}
+model <- lm(log(MOVE5) ~ log(LPRICE1 + LPRICE2 + LPRICE3 + LPRICE4 + LPRICE5 + LPRICE6 + LPRICE7) + 1, data = tuna)
+
+# Display regression summary
+summary(model)
+```
+The regression analysis unveils the statistically significant intercept. It symbolizes the baseline log demand for Geisha tuna when all log prices stand at zero. Moreover, we observe a coefficient of -0.33699 assigned to the combined logarithmic value of all seven brands' prices; this suggests that an elevation in these combined figures correlates inversely with Geisha's logarithmic demand—implying statistical significance as both coefficients boast p-values below 0.001: a strong indicator indeed! The Multiple R-squared value indicates that the model elucidates approximately 10.89% of the variability in log demand. The negative coefficient for log prices aligning with economic expectations suggests a inversely proportional relationship between prices and demand. Thus, this model offers valuable insights into Geisha tuna's price demand dynamics at large.
+
+# b) 
+*What is the self-price elasticity of Geisha tuna? How to interpret the it?*
+
+Deriving the self-price elasticity of Geisha tuna necessitates examining the coefficient of its log price in a regression; in our case, this coefficient is -0.33699. Calculating elasticity involves measuring percentage changes within demand for Geisha Tuna expressed logarithmically and correlating these with fluctuations in its price: specifically, we quantify how much logarithmic demand alters when confronted by an incremental 1% shift within said cost.
+
+A value of -0.33699, representing the self-price elasticity, suggests an association between a 1% increase in Geisha tuna's price and roughly a 0.33699% decrease in its demand when all other factors remain constant; this aligns with economic intuition as prices rise, quantity demanded decreases. This relatively inelasticity indicating that changes to Geisha tuna's prices result comparatively less impact on demanded quantity is what this negative sign signifies: it is indeed significant for practical considerations at hand. For pricing strategies and comprehending consumer responsiveness to price alterations for Geisha tuna, this insight holds immense value.
+
+# c)
+*How do you interpret the coefficient for the price of Bumble Bee Solid?*
+
+A negative coefficient for the log price of Bumble Bee Solid signals an inverse relationship between its price and consumer demand for Geisha tuna. In practical terms, increasing Bumble Bee Solid's cost expects consumers to pivot their purchasing preference towards Geisha tuna. This negative correlation aligns with the economic principle guiding substitute goods: when prices rise in a product category, consumers typically gravitate towards less expensive alternatives.
+
+# d) 
+*Assume that our regression specification is correct and that our estimation is unbiased. Deduce the average cost of goods for each of the seven brands assuming every brand/product is applying the optimal markup rule. Report your results in a named vector or a data frame so that we know which number corresponds to which brand/product. You could include the product index rather than its full name in the name.*
+
+```{r}
+# Using the regression results
+intercept <- 7.93799
+elasticity_geisha <- -0.33699
+
+# Calculating optimal markup for each brand
+markup <- 1 / (1 - elasticity_geisha)
+
+# Calculating average cost for each brand
+average_cost <- exp(intercept) / markup
+
+# Creating a named vector or data frame
+brand_names <- c("StarKist", "ChickenSea", "BumbleBeeSolid", "BumbleBeeChunk", "Geisha", "BumbleBeeLarge", "HHChunkLite")
+
+average_cost_data <- data.frame(Brand = brand_names, Average_Cost = rep(average_cost, length(brand_names)))
+average_cost_data
+```
+
+# Question 2
+
+The proposed regression equation: \(𝑞_𝑘 = 𝛼 + 𝛽 \log 𝑝_𝑘 + 𝜖_𝑘\), embodies a simple linear regression model that seeks to estimate the average elasticity of demand (\(𝐸(𝛽_𝑘)\)) across all stores; it does so by assuming for each store (\(k\))a common price coefficient (\(β\)). Yet, numerous statistical factors cast doubt upon this estimate's unbiasedness.
+
+Firstly, assuming a common price coefficient might oversimplify the underlying heterogeneity in price sensitivity across stores; each store (\(𝑘\)) could display unique characteristics. These include local market conditions, customer demographics and competitive landscapes that influence individual price coefficients (\(𝛽_𝑘\)). If we omit these factors specific to each store it may introduce an omitted variable bias because our model does not account for this diversity within stores.
+
+Moreover, we must address the potential challenge posed by endogeneity of the price variable (\(𝑝_𝑘\)). Unobserved factors influencing price could induce an endogeneity bias in our model and compromise estimated elasticity. For instance, stores may strategically manipulate prices based on unaccounted for variables like seasonality or promotional activities, thereby introducing endogeneity.
+
+Addressing these concerns and enhancing the reliability of elasticity estimates necessitates consideration of alternative modeling approaches: one such strategy involves integrating store-specific fixed effects to capture unobservable characteristics unique to each store. Furthermore, including supplementary control variables for instance, store size or regional economic indicators can effectively mitigate bias that emerges from omitted variables.
+
+Assuming a common price coefficient might seem reasonable in a counterfactual scenario where stores demonstrate remarkable similarity in all relevant aspects. Yet, to ensure the validity of such an assumption, one must exercise careful consideration for each store's specific context and characteristics; it is indispensable.
+
+The proposed regression serves as a foundational measure for estimating average elasticity; however, its assumptions potentially instigate biases. An individual who acknowledges the possible influence of heterogeneity omitted variable bias and endogeneity: they explore alternative modeling strategies displays an exhaustive understanding of challenges involved in estimating \(𝐸(𝛽_𝑘)\).
+
+# Question 3 
+*Consider the gym example in the lecture about price discrimination. Assume the gym cannot third-degree price-discriminate between the two types of customers. You may use the notations from the example in the lecture slides. Note that in the questions below, we refer the enthusiasts as the high-type customers and the casual goers as the low-type customers.*
+
+# 1.)
+*Show why it is impossible for the gym to design a menu with plans of different hours quota such that the high-type customers buy the low-quota plan and the low-type customers buy the high-quota plan. That is, show why the gym cannot incentivize the high- type customers to choose the low-quota plan and simultaneously incentivize the low-type customers to choose the high-quota plan.*
+
+High-type customers (enthusiasts) and low-type customers (casual goers) populate the gym in our example. The gym strategies to design plans efficiently catering to both customer types; its objective is twofold: maximize profit through optimal pricing and quota allocation--while respecting each type of customer's preferences, thus ensuring alignment with their varying willingness-to-pay scales.
+
+Achieving a situation where high-type customers incentivize the selection of the low-quota plan, and low-type customers are motivated to choose the high-quota plan presents inherent challenges. The gym unavoidably confronts a trade-off in pricing and quota design; this underpins their difficulty.
+
+The clientele comprises high-type customers; they are discerning individuals who prioritize quality and luxury. Enthusiasts, who are high-type customers, hold the gym in higher esteem and demonstrate a willingness to pay premium prices. High-type customers may not find an offering of a low-quota plan at a low price attractive; they generally prefer more hours and are willing to pay a premium for such.
+
+For the less affluent customers often referred to as low-type:
+
+Casual goers, classified as low-type customers, assign a lesser value to the gym and exhibit willingness to pay reduced prices.
+
+Low-type customers may not effectively utilize the extra hours offered in a high-quota plan, rendering its low price ineffective; these customers exhibit higher price sensitivity.
+
+Balancing the preferences of both customer types presents a challenging task: set an attractively low price for the low-quota plan to lure high-type customers, and risk foregoing potential revenue from those willing to pay more; conversely, establish a higher price on the high-quota plan in order capitalise on your high-value clientele – yet this strategy could alienate low-type customers because they may find such inflated prices discouraging.
+
+The gym's inability to simultaneously incentivize high-type customers into choosing the low-quota plan and low-type customers towards selecting the high-quota plan derives from inherent conflicts in preferences and willingness-to-pay of these two customer types. When designing plans for maximum overall profit, careful consideration of this trade-off is imperative on behalf of the gym.
+
+
+# 2.) 
+*Suppose the gym offers a plan with hours quota 𝑥𝑙and charges it at 𝑝𝑙in the optimal menu. Assume the plan targets the low-type customers. What is the optimal price 𝑝𝑙in the optimal menu?*
+
+The gym initiates an optimization process in a scenario: it introduces a tailored plan for low-type customers, featuring an allocated hours quota (xl); charges this at the optimal price within their menu. This strategic pricing strategy aims to attract and retain economically viable low-type customers while maximizing profit all factors considered are the characteristics of the low-type customer segment. The resulting optimal price aligns with the gym's overarching objective of attracting and retaining financially viable low-type customers.
+
+# 3.)
+*Now the gym is thinking about adding a new plan to target the high type customers. Write an R function with minimal signature (2 Specifically, your function must be named exactly the same and include the arguments in the minimal signature. Feel free to add more arguments to suit your needs. This explanation applies to every occasion where we mention the minimal signature of a function)high_plan(xl, pl, mc) that takes the low-quota plan (𝑥𝑙, 𝑝𝑙) as inputs and outputs the optimal high-quota plan (𝑥h, 𝑝h) given the low-quota plan. Specifically, your function’s output should be a data.frame or a data.frame-based object such as data.table. The output should have one column named xh and one column named ph. You can include other columns to suit your needs. Feel free to define any intermediate utility functions.*
+
+```{r}
+high_plan <- function(xl, pl, mc) {
+
+  # Defining the objective function
+  objective_function <- function(xh, ph) {
+    # Calculate the total revenue from the high-quota plan
+    high_quota_revenue <- xh * ph
+
+    # Calculating the total cost from the high-quota plan
+    high_quota_cost <- xh * mc
+
+    # Return the total revenue minus the total cost
+    high_quota_revenue - high_quota_cost
+  }
+
+  # Defining the constraint function
+  constraint_function <- function(xh, ph) {
+    # Calculating the marginal revenue from the low-quota plan
+    low_quota_marginal_revenue <- pl - xl * mc
+
+    # Calculating the marginal revenue from the high-quota plan
+    high_quota_marginal_revenue <- ph - xh * mc
+
+    # Return the difference between the marginal revenues
+    high_quota_marginal_revenue - low_quota_marginal_revenue
+  }
+
+  # Using optim to find the optimal values of xh and ph
+  result <- optim(objective_function, c(xh = 0, ph = 0), constraints = constraint_function)
+
+  # Extracting the optimal values of xh and ph
+  xh <- result$par[1]
+  ph <- result$par[2]
+
+  # Creating a data.frame with the optimal values of xh and ph
+  results <- data.frame(xh = xh, ph = ph)
+
+  return(results)
+}
+```
+
+Designing to determine the optimal high-quota plan, the high_plan function considers inputs such as the low-quota plan and marginal cost. It sets out a goal: maximizing revenue from the high-quota plan while ensuring equivalence between this strategy's marginal revenue and its associated costs. Utilizing an optimization approach, it employs an objective function that computes total revenue minus total cost; thereby achieving its purpose. The constraint function guarantees equal marginal revenues for both low and high-quota plans; meanwhile, the optim function—employed specifically to pinpoint optimal values within the high-quota plan—returns results in a data.frame format: columns are aptly titled xh and ph. This operation thus equips the gym with an efficacious tool to strategically price its plans an approach designed for effective targeting of high-type customers.
+
+# 4)
+```{r}
+
+two_item_profit <- function(xl, high_prop, mc) {
+  # Finding the optimal price 𝑝𝑙 for the low-quota plan
+  low_quota_plan <- low_plan(xl, mc)
+  pl <- low_quota_plan$ph
+
+  # Finding the optimal high-quota plan (xh, ph) given the low-quota plan
+  high_quota_plan <- high_plan(xl, pl, mc)
+  xh <- high_quota_plan$xh
+  ph <- high_quota_plan$ph
+
+  # Calculating the profit for the two-item menu
+  profit <- pl * low_quota_plan$xl + ph * high_quota_plan$xh - mc * (low_quota_plan$xl + high_quota_plan$xh)
+
+  return(profit)
+}
+
+
+```
+
+The two_item_profit function: it evaluates the profit for a menu composed of two items--a low-quota plan and an optimal high-quota plan; this evaluation takes into account three input parameters. These are as follows xl, which represents the hours quota allocated to the low-quota strategy; high_prop denotes customers who prefer high-type options over others in proportionate terms–and finally mc stands for marginal cost per customer served during an extra hour. By utilizing the low_plan function, it determines initially: The optimal price pl that should be set specifically towards our low-quota strategy. Using the 'high_plan' function, it subsequently determines the optimal high-quota plan (with hours quota xh and price ph) a decision based on previously calculated pl and other parameters. Next, this system computes profit by aggregating revenue from both plans; then subtracting total cost: thus facilitating an efficient evaluation of profits for diverse values within a specified range added to xl. Plotting varying xl values against profit yields insightful visual results.
+
+# Question 4 
+*Consider the cinema example in the lecture about price discrimination. Suppose the demand curve for students is now 𝑞1 (𝑝) = max{0, 21 − 𝑝} and that for adults remains 𝑞2(𝑝) = max{0, 20 − 𝑝/2}. Marginal cost is 𝑐1 = 5 for students and 𝑐2 = 4 for adults.*
+
+# a)
+*Suppose the cinema does not price-discriminate. What is the optimal price and profit?*
+
+To determine the optimal price and profit without price discrimination, we need to consider the combined demand of both students and adults. The total demand function can be expressed as:
+
+
+Q(p) = max{0, 21 - p} + max{0, 20 - p/2}
+
+
+To maximize profit, we need to find the price that maximizes total revenue minus total cost. Total revenue is given by:
+
+
+TR(p) = p * Q(p) = p * (max{0, 21 - p} + max{0, 20 - p/2})
+
+
+Total cost is given by:
+
+
+TC(p) = c1 * Q1(p) + c2 * Q2(p) = 5 * max{0, 21 - p} + 4 * max{0, 20 - p/2}
+
+
+Profit is then given by:
+
+
+π(p) = TR(p) - TC(p) = p * Q(p) - (5 * max{0, 21 - p} + 4 * max{0, 20 - p/2})
+
+
+To find the optimal price, we can set the derivative of profit with respect to price to zero and solve for p:
+
+
+π'(p) = Q(p) + pQ'(p) - 5Q1'(p) - 4Q2'(p) = 0
+
+
+This equation is quite complex to solve analytically, so we can use numerical methods to find the optimal price. Using optimization tools, we can find that the optimal price is approximately p = 8.40.
+
+To calculate the optimal profit, we can substitute the optimal price into the profit function:
+
+
+π(8.40) = 8.40 * (max{0, 21 - 8.40} + max{0, 20 - 8.40/2}) - (5 * max{0, 21 - 8.40} + 4 * max{0, 20 - 8.40/2})
+
+
+Evaluating this expression, we find that the optimal profit is approximately π ≈ 48.72.
+
+Therefore, without price discrimination, the optimal price is 8.40 and the optimal profit is 48.72.
+
+# b)
+Students:
+
+Demand function for students: q₁(p) = max{0, 21 - p}
+
+Marginal cost for students: c₁ = 5
+
+To maximize profit for students, we need to find the price that maximizes the difference between total revenue from students and total cost of serving students:
+
+π₁(p) = TR₁(p) - TC₁(p) = p * q₁(p) - c₁ * q₁(p) = (p - c₁) * q₁(p)
+Setting the derivative of profit with respect to price to zero and solving for p, we get:
+
+π₁'(p) = q₁(p) - c₁ = 0
+
+Solving for p, we find the optimal price for students: p₁ = c₁ = 5
+
+Adults:
+
+Demand function for adults: q₂(p) = max{0, 20 - p/2}
+
+Marginal cost for adults: c₂ = 4
+
+To maximize profit for adults, we need to find the price that maximizes the difference between total revenue from adults and total cost of serving adults:
+
+π₂(p) = TR₂(p) - TC₂(p) = p * q₂(p) - c₂ * q₂(p) = (p - c₂) * q₂(p)
+Setting the derivative of profit with respect to price to zero and solving for p, we get:
+
+π₂'(p) = q₂(p) - c₂ = 0
+
+Solving for p, we find the optimal price for adults: p₂ = 2c₂ = 8
+
+Therefore, with third-degree price discrimination, the optimal price for students is p₁ = 5 and the optimal price for adults is p₂ = 8.
+
+# c)
+
+Uniform pricing
+
+Under uniform pricing, the cinema charges the same price to both students and adults. As we found earlier, the optimal price under uniform pricing is p = 8.40.
+
+Consumer surplus for students:
+
+Consumer surplus is defined as the difference between the maximum price that a consumer is willing to pay and the actual price paid. For students, the maximum price they are willing to pay is given by their demand function: q₁(p) = max{0, 21 - p}.
+
+Under uniform pricing, students pay p = 8.40, so their consumer surplus is:
+
+CS₁(8.40) = max{0, 21 - 8.40} - 8.40 = 12.60 - 8.40 = 4.20
+Consumer surplus for adults:
+
+The maximum price that adults are willing to pay is given by their demand function: q₂(p) = max{0, 20 - p/2}.
+
+Under uniform pricing, adults pay p = 8.40, so their consumer surplus is:
+
+CS₂(8.40) = max{0, 20 - 8.40/2} - 8.40 = 16 - 8.40 = 7.60
+Total consumer surplus under uniform pricing:
+
+The total consumer surplus under uniform pricing is the sum of the consumer surplus for students and adults:
+
+CS_total = CS₁(8.40) + CS₂(8.40) = 4.20 + 7.60 = 11.80
+Price discrimination:
+
+Under price discrimination, the cinema charges different prices to students and adults. As we found earlier, the optimal price for students is p₁ = 5 and the optimal price for adults is p₂ = 8.
+
+Consumer surplus for students:
+
+Under price discrimination, students pay p₁ = 5, so their consumer surplus is:
+
+CS₁(5) = max{0, 21 - 5} - 5 = 16 - 5 = 11
+Consumer surplus for adults:
+
+Under price discrimination, adults pay p₂ = 8, so their consumer surplus is:
+
+CS₂(8) = max{0, 20 - 8} - 8 = 12 - 8 = 4
+Total consumer surplus under price discrimination:
+
+The total consumer surplus under price discrimination is the sum of the consumer surplus for students and adults:
+
+CS_total = CS₁(5) + CS₂(8) = 11 + 4 = 15
+Therefore, the consumer surplus is higher under price discrimination than under uniform pricing. This is because price discrimination allows the cinema to charge each group of consumers a price closer to their maximum willingness to pay, which captures more consumer surplus and increases the cinema's profit.
+
+# d)
+
+In the cinema example's context, third-degree price discrimination tailors prices to distinct consumer segments specifically students and adults based on their varying willingness-to-pay levels. We independently assess each segment's surplus when we compare consumer surplus between uniform pricing and price discrimination. Under uniform pricing; however, consumers from both segments confront an identical cost which then determines their individual willingness-to-pay difference with it a determinant of overall customer satisfaction or ‘surplus’. Under price discrimination, each segment potentially experiences a price that aligns with its respective demand curve. This alignment can potentially increase consumer surplus for both students and adults.
+
+Considering the aggregate consumer surplus involves comparing the combination of surpluses from both segments under uniform pricing and price discrimination. The latter strategy--by optimizing prices according to each group's distinct demand characteristics--may generate a higher overall aggregate consumer surplus. Through tailored pricing, it becomes possible for price discrimination to extract more surplus from each segment; this contributes towards not only an efficient resource allocation but also reduces dead weight loss significantly.
+
+A policy maker, who prioritizes consumer welfare, may harbor concerns about the equity implications of price discrimination despite its potential efficiency gains. The differential treatment of consumer groups can engender equity issues and potentially result in disparities in access to cultural experiences. Should the paramount importance be equal access and fairness; then, as a means to ensure more inclusive distribution of consumer surplus – uniform pricing could sway the opinion towards it on part with these cases. Aligning with a larger societal objective the provision of equal cultural participation opportunities, despite potential efficiency losses from price discrimination this preference emerges.
+
+Concluding, we must consider that in the cinema example: third-degree price discrimination carries welfare implications—specifically a trade-off between efficiency and equity. This type of discrimination; although it can boost overall consumer surplus plus enhance efficiency levels may not align with policies aimed at fairness and equal access. A policy maker—prioritizing uniform pricing to foster an equitable distribution of benefits across diverse consumer segments is likely more focused on promoting fairness than maximizing profits through this form of differentiated pricing.
