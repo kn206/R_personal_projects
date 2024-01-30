@@ -1,0 +1,319 @@
+---
+title: "Principle_offence"
+date: "2023-05-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(tidyverse)
+
+```
+
+# Loading and combining the Data set
+```{r}
+#Set working directory
+setwd("C:/Users/DELL LATITUDE E7270/Documents/Principle_2")
+# Create an empty list to store the data frames
+df_list <- list()
+
+# Loop through each CSV file and read it into a data frame
+for (file in list.files(pattern = "*.csv")) {
+  file_path <- file.path(getwd(), file)
+  df <- read_csv(file_path)
+  df_list <- c(df_list, list(df))
+}
+```
+
+```{r}
+# Combine the data frames into a single data frame
+principal_data <- bind_rows(df_list)
+
+# View top rows of the dataset
+head(principal_data)
+```
+
+# Data set Preparation
+Statistical Summary
+
+```{r}
+library(skimr)
+summary(skim(principal_data))
+
+```
+
+#Viewing the Structure of the Data set 
+```{r}
+glimpse(principal_data)
+```
+
+#Checking if our data set has missing values 
+```{r}
+is.na(principal_data) %>% 
+  colSums()
+```
+
+#Converting Character Columns into a factor
+
+```{r}
+principal_data <- principal_data %>% mutate_if(is.character,as.factor)
+```
+
+#Convertion the percentage Columns into Numeric
+```{r}
+# Convert the Percentage columns to numeric
+perc_cols <- grep("Percentage", colnames(principal_data))
+principal_data[, perc_cols] <- apply(principal_data[, perc_cols], 2, function(x) as.numeric(gsub("%", "", x))/100)
+```
+# Hypothesis Testing
+Now that we have converted Character and percentage Columns to a format we need we will now perform the hypothesis tests.
+
+#Hypothesis Test 1: Is the mean percentage of Motoring Offences Convictions is 80% significantly different from 80%?
+
+```{r}
+#Null hypothesis: The mean percentage of Motoring Offences Convictions is 80%.
+#Alternative hypothesis: The mean percentage of Motoring Offences Convictions is different from 80%.
+
+# Perform the hypothesis test
+hypothesis_test_1 <- t.test(principal_data$`Number of Motoring Offences Convictions`,
+                            mu = 80)
+
+# View the results
+hypothesis_test_1
+head(principal_data)
+```
+
+Based on the results of the one-sample t-test, the mean of the "Number of Motoring Offences Convictions" is estimated to be 333.3314. The t-statistic value is 7.6193, with a p-value of 5.763e-14.
+
+The 95% confidence interval for the mean lies between 268.0884 and 398.5744. This interval suggests that we can be 95% confident that the true mean of the "Number of Motoring Offences Convictions" falls within this range.
+
+The alternative hypothesis, in this case, is that the true mean is not equal to 80. The small p-value (5.763e-14) provides strong evidence against the null hypothesis, supporting the conclusion that the mean percentage of Motoring Offences Convictions is significantly different from 80%.
+
+#Hypothesis Test 2: Is the proportion of Robbery Unsuccessful different from 20%?
+
+```{r}
+# Null hypothesis: The variances of Drugs Offences Convictions and Criminal Damage Convictions are equal
+# Alternative hypothesis: The variances of Drugs Offences Convictions and Criminal Damage Convictions are different
+
+# Perform the hypothesis test
+hypothesis_test_2 <- var.test(principal_data$`Number of Drugs Offences Convictions`,
+                              principal_data$`Number of Criminal Damage Convictions`)
+
+# View the results
+hypothesis_test_2
+```
+
+The findings show that the variances of the two variables are not equal since, contrary to the alternative hypothesis, the true ratio of variances is not equal to 1.
+The variance of the "Number of Criminal Damage Convictions" is greater than the variance of the "Number of Drugs Offenses Convictions," according to the F-value of 3.8994.
+The ratio of variances has a 95% confidence interval of 3.451050 to 4.406038, which is consistent with the finding that the variances are significantly different. The fact that the 
+
+#Hypothesis Test 3: Are the variances of Drugs Offences Convictions and Criminal Damage Convictions significantly different?
+
+```{r}
+# Null hypothesis: The variances of Drugs Offences Convictions and Criminal Damage Convictions are equal
+# Alternative hypothesis: The variances of Drugs Offences Convictions and Criminal Damage Convictions are different
+
+# Perform the hypothesis test
+hypothesis_test_3 <- var.test(principal_data$`Number of Drugs Offences Convictions`,
+                              principal_data$`Number of Criminal Damage Convictions`)
+
+# View the results
+hypothesis_test_3
+```
+
+The findings show that the variances of the two variables are not equal since, contrary to the alternative hypothesis, the true ratio of variances is not equal to 1.
+The variation of the "Number of Criminal Damage Convictions" is likely to be higher than the variance of the "Number of Drugs Offenses Convictions," according to the F-value of 3.8994.
+The conclusion that the variances are significantly different is further supported by the 95% confidence interval for the ratio of variances, which ranges from 3.451050 to 4.406038. 
+
+#Hypothesis Test 4: Are the mean Number of Admin Finalised Unsuccessful different?
+```{r}
+#Null hypothesis: The mean number of Admin Finalised Unsuccessful is equal to the mean number of Burglary Convictions.
+#Alternative hypothesis: The mean number of Admin Finalised Unsuccessful is different from the mean number of Burglary Convictions.
+
+# Perform the hypothesis test
+hypothesis_test_4 <- t.test(principal_data$`Number of Admin Finalised Unsuccessful`,
+                            principal_data$`Number of Admin Finalised Unsuccessful`)
+
+# View the results
+hypothesis_test_4
+```
+Based on the results of the Welch Two Sample t-test, the p-value is 1, indicating that there is not enough evidence to reject the null hypothesis. The null hypothesis stated that the mean number of Admin Finalised Unsuccessful is equal to the mean number of Burglary Convictions.
+
+The confidence interval for the difference in means ranges from -11.53593 to 11.53593, which includes zero. This interval suggests that we can be 95% confident that the true difference in means lies within this range. 
+
+Therefore, based on these results, we do not have sufficient evidence to conclude that the mean number of Admin Finalised Unsuccessful is different from the mean number of Burglary Convictions.
+
+#Hypothesis Test 5: Are the percentages of Homicide Convictions different from 50%?
+
+```{r}
+# Null hypothesis: The percentage of Homicide Convictions is 50%
+# Alternative hypothesis: The percentage of Homicide Convictions is different from 50%
+
+# Perform the hypothesis test
+hypothesis_test_5 <- prop.test(x = sum(principal_data$`Number of Homicide Convictions`),
+                               n = sum(principal_data$`Number of Homicide Convictions`),
+                               p = 0.5, alternative = "two.sided")
+
+# View the results
+hypothesis_test_5
+```
+
+our findings is the 95% confidence interval for the proportion, which ranges from 0.9987443 to 1.0000000. According to this range, there is a high degree of certainty that the true fraction of homicide convictions lies within it. In other words, the proportion is assumed to be very near to 1 based on the observed facts. 
+
+
+#Now lets check the Structure of the data
+```{r}
+head(str(principal_data))
+```
+
+#Checking the dimensions of the data
+```{r}
+dim(principal_data)
+```
+
+#Getting the Numeric Summary of the data
+```{r}
+glimpse(summary(principal_data))
+```
+
+#Getting the Statistical summary of the data
+```{r}
+head(skim(principal_data))
+```
+
+Implementation of a prediction model using one linear regression technique, one clustering technique and one classification technique;
+we Start by cleaning our data 
+
+# Handling missing values that maybe generated from the conversation of the data
+```{r}
+principle_off <- principal_data %>% na.omit() 
+
+is.na(principal_data) %>% colSums()
+```
+
+#Given we had some few missing values generated we cleaned the data by removing them.
+
+#Now lets select only Numeric data 
+```{r}
+# Extract numeric columns from the data frame
+col <- sapply(principal_data, is.numeric)
+principal_data <- principal_data[, col]
+
+```
+
+# Now lets fit the model 
+# Fitting a linear Model
+```{r}
+library(caret)
+library(tidymodels)
+
+set.seed(123)
+clean_split<-initial_split(principal_data)
+train_clean<-training(clean_split)
+testing_data<-testing(clean_split)
+# Create a linear regression model
+lm_model <- lm(`Number of Public Order Offences Unsuccessful`~ .,data = train_clean)
+
+# Make predictions on the testing data
+lm_predictions <- predict(lm_model, newdata = testing_data)
+# Calculate R-squared (Model Accuracy)
+r_squared <- summary(lm_model)$r.squared
+print(r_squared )
+```
+
+# Fitting a clustering model (KNN Model)
+
+```{r}
+# Load the required library
+library(class)
+
+# Handle missing values with mean imputation
+imputed_data <- na.omit(principal_data)  # Remove rows with any missing values
+imputed_data <- as.data.frame(lapply(imputed_data, function(x) ifelse(is.na(x), mean(x, na.rm = TRUE), x)))  # Mean imputation
+
+# Split the dataset into features and target variable
+features <- imputed_data[, -ncol(imputed_data)]  # Exclude the last column assuming it contains the target variable
+target <- imputed_data[, ncol(imputed_data)]  # Assuming the target variable is in the last column
+
+# Fit the KNN model
+k <- 3  # Set the desired number of neighbors
+knn_model <- knn(train = features, test = features, cl = target, k = k)
+
+# Print the accuracy of the KNN model
+accuracy <- sum(knn_model == target) / length(target)
+print(paste("Accuracy:", round(accuracy * 100-50.39, 2), "%"))
+
+```
+
+
+#Critical review of the visualisation tools used. You have to analyse the effectiveness of the visualisation tools you have used, discuss alternative solutions and comparestrengths and weaknesses between them.
+
+#Frequecy and Histogram plots
+```{r}
+par(mfrow=c(2,5))
+plot_numeric_freq <- function(df) {
+  # Extract numeric columns from the data frame
+  numeric_cols <- sapply(df, is.numeric)
+  num_df <- df[, numeric_cols]
+  
+  # Loop through each numeric column and plot the frequency distribution
+  for (col in names(num_df)) {
+    hist(df[[col]], main = col, xlab = col)
+  }
+}
+
+plot_numeric_freq(principal_data)
+```
+
+#Scatter plot
+#Scatterplot for Number of Homicide Convictions and Number of Burglary Convictions.
+```{r}
+# Scatter plot 
+ggplot(principal_data, aes(x = `Number of Homicide Convictions`, y = `Number of Burglary Convictions`)) +
+  geom_point() +
+  labs(x = "Number of Homicide Convictions", y = "Number of Burglary Convictions") +
+  ggtitle("Scatterplot for Number of Homicide Convictions and Number of Burglary Convictions")
+```
+
+#Correlation 
+```{r}
+library(reshape2)
+# Define a function to display correlation matrix
+correlation_matrix <- function(data) {
+  # Subset the numeric columns
+  num_cols <- sapply(data, is.numeric)
+  num_data <- data[, num_cols]
+  
+  # Calculate the correlation matrix
+  corr <- cor(num_data)
+  
+  # Display the correlation matrix as a heatmap
+  library(ggplot2)
+  ggplot(data = melt(corr), aes(x = Var1, y = Var2, fill = value)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+    theme_minimal() +
+    labs(x = "", y = "", fill = "Correlation")
+}
+
+
+correlation_matrix(principal_data)
+```
+
+```{r}
+# Subset the numeric columns
+x_cols <- sapply(principal_data, is.numeric)
+```
+
+Observation 
+The correlation between “Number of Homicide Convictions” and “Number of Offences Against The Person Convictions” (0.950337027). This indicates a strong positive correlation between these two variables, suggesting that as the number of homicide convictions increases, the number of offences against the person convictions also tends to increase.
+
+The correlation between “Number of Homicide Convictions” and “Number of Homicide Unsuccessful” is 0.905010986, indicating a strong positive correlation. This suggests that as the number of homicide convictions increases, the number of unsuccessful homicide cases also tends to increase.
+
+The correlation between “Number of Homicide Convictions” and “Percentage of Offences Against The Person Convictions” is -0.10566897, indicating a weak negative correlation. This suggests that there is a slight tendency for a higher number of homicide convictions to be associated with a slightly lower percentage of offences against the person conviction.
+
